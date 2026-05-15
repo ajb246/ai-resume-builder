@@ -1,5 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+import { Sidebar } from "@/components/dashboard/Sidebar";
 
 export default async function DashboardLayout({
   children,
@@ -8,5 +9,11 @@ export default async function DashboardLayout({
 }) {
   const { userId } = await auth();
   if (!userId) redirect("/sign-in");
-  return <div className="min-h-screen bg-background">{children}</div>;
+
+  return (
+    <div className="flex h-screen bg-background">
+      <Sidebar />
+      <main className="flex-1 overflow-auto">{children}</main>
+    </div>
+  );
 }

@@ -1,7 +1,14 @@
-export default function DashboardPage() {
+import { getCurrentUser } from "@/lib/auth";
+
+export default async function DashboardPage() {
+  const user = await getCurrentUser();
+
   return (
-    <main className="p-8">
-      <h1 className="text-2xl font-semibold">Dashboard — Sprint 1</h1>
-    </main>
+    <div className="p-8">
+      <h1 className="text-2xl font-bold">
+        Welcome back{user?.name ? `, ${user.name}` : ""}!
+      </h1>
+      <p className="text-muted-foreground mt-1">Upload a resume to get started.</p>
+    </div>
   );
 }
