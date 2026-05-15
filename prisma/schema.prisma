@@ -14,7 +14,6 @@ model User {
   email            String   @unique
   name             String?
   subscriptionPlan String   @default("free")
-  stripeCustomerId String?
   messageCount     Int      @default(0)
   uploadCount      Int      @default(0)
   createdAt        DateTime @default(now())
@@ -41,6 +40,8 @@ model Resume {
   updatedAt       DateTime @updatedAt
 
   chats Chat[]
+
+  @@index([userId, createdAt(sort: Desc)])
 }
 
 model Chat {
@@ -53,6 +54,8 @@ model Chat {
   title     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([userId, updatedAt(sort: Desc)])
 }
 
 model Job {
@@ -70,4 +73,8 @@ model Job {
   source      String
   saved       Boolean  @default(false)
   createdAt   DateTime @default(now())
+
+  @@unique([userId, externalId])
+  @@index([userId, matchScore(sort: Desc)])
+  @@index([userId, saved])
 }

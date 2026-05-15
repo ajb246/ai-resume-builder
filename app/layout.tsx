@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { PostHogProvider } from "@/components/providers/PostHogProvider";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -23,11 +24,13 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en" className={`${inter.variable} h-full`} suppressHydrationWarning>
-        <body className="min-h-full flex flex-col">
-          <ThemeProvider>
-            {children}
-            <Toaster />
-          </ThemeProvider>
+        <body className="min-h-full flex flex-col" suppressHydrationWarning>
+          <PostHogProvider>
+            <ThemeProvider>
+              {children}
+              <Toaster />
+            </ThemeProvider>
+          </PostHogProvider>
         </body>
       </html>
     </ClerkProvider>

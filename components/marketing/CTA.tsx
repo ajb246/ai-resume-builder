@@ -23,7 +23,7 @@ export function CTA() {
           Join thousands of job seekers who use ResumeAI to get more interviews, faster.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Link href="/sign-up" className={cn(buttonVariants({ size: "lg" }), "gap-2")}>
+          <Link href="/dashboard" className={cn(buttonVariants({ size: "lg" }), "gap-2")}>
             <Upload className="h-4 w-4" />
             Upload Resume
           </Link>

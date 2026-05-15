@@ -13,9 +13,10 @@ import { FileText, MessageSquare, Trash2, BarChart3 } from "lucide-react";
 
 interface ResumeCardProps {
   resume: Resume;
+  chatId: string | null;
 }
 
-export function ResumeCard({ resume }: ResumeCardProps) {
+export function ResumeCard({ resume, chatId }: ResumeCardProps) {
   const router = useRouter();
   const [deleting, setDeleting] = useState(false);
 
@@ -63,7 +64,7 @@ export function ResumeCard({ resume }: ResumeCardProps) {
           View
         </Link>
         <Link
-          href={`/chat/${resume.id}`}
+          href={chatId ? `/chat/${chatId}` : `/resume/${resume.id}`}
           className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "gap-1.5 text-xs")}
         >
           <MessageSquare className="h-3.5 w-3.5" />

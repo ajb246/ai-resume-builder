@@ -5,7 +5,6 @@ import { useDropzone } from "react-dropzone";
 import { useRouter } from "next/navigation";
 import { UploadCloud, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { useUploadThing } from "@/lib/uploadthing-client";
 import { cn } from "@/lib/utils";
 
 const ACCEPTED_TYPES = {
@@ -19,8 +18,6 @@ export function ResumeUpload() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [stage, setStage] = useState<"idle" | "uploading" | "parsing">("idle");
 
-  const { startUpload } = useUploadThing("resumeUploader");
-
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
       const file = acceptedFiles[0];
@@ -30,19 +27,14 @@ export function ResumeUpload() {
       setStage("uploading");
 
       try {
-        const uploaded = await startUpload([file]);
-        if (!uploaded?.[0]) throw new Error("Upload failed");
+        const formData = new FormData();
+        formData.append("file", file);
 
         setStage("parsing");
 
         const res = await fetch("/api/upload", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            fileUrl: uploaded[0].ufsUrl,
-            fileName: file.name,
-            mimeType: file.type,
-          }),
+          body: formData,
         });
 
         if (res.status === 403) {
@@ -52,22 +44,24 @@ export function ResumeUpload() {
         }
 
         if (!res.ok) {
-          throw new Error("Upload processing failed");
+          const { error } = (await res.json()).catch?.(() => ({})) ?? {};
+          throw new Error(error ?? "Upload processing failed");
         }
 
-        const { data } = (await res.json()) as { data: { id: string } };
+        const { data } = (await res.json()) as { data: { resume: { id: string }; chatId: string } };
         toast.success("Resume uploaded!", {
           description: "AI is ready to analyze your resume.",
         });
-        router.push(`/chat/${data.id}`);
-      } catch {
-        toast.error("Upload failed", { description: "Please try again." });
+        router.push(`/chat/${data.chatId}`);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Please try again.";
+        toast.error("Upload failed", { description: msg });
       } finally {
         setIsProcessing(false);
         setStage("idle");
       }
     },
-    [startUpload, router]
+    [router]
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({

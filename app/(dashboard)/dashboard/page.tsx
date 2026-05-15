@@ -1,51 +1,47 @@
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { ResumeUpload } from "@/components/resume/ResumeUpload";
-import { ResumeCard } from "@/components/resume/ResumeCard";
-import Link from "next/link";
+import { searchAdzuna } from "@/services/jobs/adzuna";
+import { DashboardClient } from "@/components/dashboard/DashboardClient";
+
+const TRENDING_ROLES = [
+  "Software Engineer",
+  "Data Scientist",
+  "Product Manager",
+  "UX Designer",
+  "DevOps Engineer",
+];
 
 export default async function DashboardPage() {
   const user = await getCurrentUser();
   if (!user) return null;
 
-  const resumes = await prisma.resume.findMany({
+  const [resumes, chats, trendingJobs] = await Promise.all([
+    prisma.resume.count({ where: { userId: user.id } }),
+    prisma.chat.count({ where: { userId: user.id } }),
+    searchAdzuna(TRENDING_ROLES[Math.floor(Math.random() * TRENDING_ROLES.length)] ?? "Software Engineer", "us", 6).catch(() => []),
+  ]);
+
+  const latestResume = await prisma.resume.findFirst({
     where: { userId: user.id },
     orderBy: { createdAt: "desc" },
+    select: { id: true, fileName: true, score: true, targetRole: true },
   });
 
-  const atFreeLimit = user.subscriptionPlan === "free" && resumes.length >= 1;
+  const latestChat = latestResume
+    ? await prisma.chat.findFirst({
+        where: { userId: user.id, resumeId: latestResume.id },
+        orderBy: { updatedAt: "desc" },
+        select: { id: true },
+      })
+    : null;
 
   return (
-    <div className="max-w-4xl mx-auto p-8 space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold">My Resumes</h1>
-        <p className="text-muted-foreground mt-1">
-          {user.subscriptionPlan === "free"
-            ? `${resumes.length}/1 uploads used · Free plan`
-            : `${resumes.length} resume${resumes.length !== 1 ? "s" : ""} · Premium`}
-        </p>
-      </div>
-
-      {atFreeLimit ? (
-        <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-400">
-          Free plan limit reached.{" "}
-          <Link href="/#pricing" className="underline font-medium">
-            Upgrade to Premium
-          </Link>{" "}
-          for unlimited uploads.
-        </div>
-      ) : (
-        <ResumeUpload />
-      )}
-
-      {resumes.length > 0 && (
-        <div className="space-y-3">
-          <h2 className="text-lg font-semibold">Uploaded Resumes</h2>
-          {resumes.map((resume) => (
-            <ResumeCard key={resume.id} resume={resume} />
-          ))}
-        </div>
-      )}
-    </div>
+    <DashboardClient
+      user={{ name: user.name, email: user.email }}
+      stats={{ resumes, chats }}
+      latestResume={latestResume}
+      latestChatId={latestChat?.id ?? null}
+      trendingJobs={trendingJobs}
+    />
   );
 }

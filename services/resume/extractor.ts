@@ -7,7 +7,7 @@ const ExperienceSchema = z.object({
   company: z.string(),
   title: z.string(),
   startDate: z.string(),
-  endDate: z.string().optional(),
+  endDate: z.string().nullable().optional(),
   current: z.boolean(),
   bullets: z.array(z.string()),
 });
@@ -15,17 +15,17 @@ const ExperienceSchema = z.object({
 const EducationSchema = z.object({
   institution: z.string(),
   degree: z.string(),
-  field: z.string().optional(),
-  graduationDate: z.string().optional(),
-  gpa: z.string().optional(),
+  field: z.string().nullable().optional(),
+  graduationDate: z.string().nullable().optional(),
+  gpa: z.string().nullable().optional(),
 });
 
 const ParsedResumeSchema = z.object({
   name: z.string(),
   email: z.string(),
-  phone: z.string().optional(),
-  location: z.string().optional(),
-  summary: z.string().optional(),
+  phone: z.string().nullable().optional(),
+  location: z.string().nullable().optional(),
+  summary: z.string().nullable().optional(),
   skills: z.array(z.string()),
   experience: z.array(ExperienceSchema),
   education: z.array(EducationSchema),
@@ -33,10 +33,11 @@ const ParsedResumeSchema = z.object({
     .array(
       z.object({
         name: z.string(),
-        issuer: z.string().optional(),
-        date: z.string().optional(),
+        issuer: z.string().nullable().optional(),
+        date: z.string().nullable().optional(),
       })
     )
+    .nullable()
     .optional(),
   projects: z
     .array(
@@ -46,8 +47,9 @@ const ParsedResumeSchema = z.object({
         technologies: z.array(z.string()),
       })
     )
+    .nullable()
     .optional(),
-  languages: z.array(z.string()).optional(),
+  languages: z.array(z.string()).nullable().optional(),
 });
 
 export async function extractResumeData(rawText: string): Promise<ParsedResume> {
