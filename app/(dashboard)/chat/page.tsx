@@ -35,7 +35,7 @@ export default async function ChatsPage() {
         </div>
       ) : (
         <div className="space-y-3">
-          {chats.map((chat) => (
+          {chats.map((chat: (typeof chats)[number]) => (
             <Link
               key={chat.id}
               href={`/chat/${chat.id}`}
